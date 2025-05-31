@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <map>
+#include <set>
 #include <cctype>
 
 // Funkcija pasalinti skyrybos zenklus nuo zodzio pradzios ir pabaigos
@@ -21,16 +22,19 @@ int main() {
     }
 
     std::map<std::string, int> word_count;
+    std::map<std::string, std::set<int>> word_lines;
     std::string line, word;
+    int line_number = 0;
 
     while (std::getline(in, line)) {
+        ++line_number;
         std::istringstream iss(line);
         while (iss >> word) {
             std::string cleaned = valymas(word);
             if (!cleaned.empty()) {
-                // Konvertuojame i mažasias raides
                 for (auto& c : cleaned) c = std::tolower(c);
                 ++word_count[cleaned];
+                word_lines[cleaned].insert(line_number);
             }
         }
     }
@@ -41,7 +45,6 @@ int main() {
         std::cerr << "Nepavyko atidaryti output.txt" << std::endl;
         return 1;
     }
-
     for (const auto& pair : word_count) {
         if (pair.second > 1) {
             out << pair.first << " " << pair.second << std::endl;
@@ -49,6 +52,27 @@ int main() {
     }
     out.close();
 
-    std::cout << "Rezultatai irašyti i output.txt" << std::endl;
+    // Cross-reference lentelė
+    std::ofstream cross("crossref.txt");
+    if (!cross) {
+        std::cerr << "Nepavyko atidaryti crossref.txt" << std::endl;
+        return 1;
+    }
+    cross << "Zodis\tEilutes\n";
+    for (const auto& pair : word_count) {
+        if (pair.second > 1) {
+            cross << pair.first << "\t";
+            bool first = true;
+            for (int ln : word_lines[pair.first]) {
+                if (!first) cross << ", ";
+                cross << ln;
+                first = false;
+            }
+            cross << std::endl;
+        }
+    }
+    cross.close();
+
+    std::cout << "Rezultatai irašyti i output.txt ir crossref.txt" << std::endl;
     return 0;
 }
