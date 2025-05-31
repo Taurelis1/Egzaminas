@@ -51,7 +51,7 @@ int main() {
         } else if (veiksmas == 3) {
             analizuoti_zodzius(tekstas, prefix);
             atrasti_url(tekstas, prefix + "urls.txt");
-            std::cout << "Rezultatai irašyti i " << prefix << "output.txt, " << prefix << "crossref.txt ir " << prefix << "urls.txt\n";
+            std::cout << "Rezultatai irasyti i " << prefix << "output.txt, " << prefix << "crossref.txt ir " << prefix << "urls.txt\n";
         } else {
             std::cout << "Neteisingas pasirinkimas!\n";
         }
