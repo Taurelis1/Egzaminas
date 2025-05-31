@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include <cctype>
+#include <regex>
 
 // Funkcija pasalinti skyrybos zenklus nuo zodzio pradzios ir pabaigos
 std::string valymas(const std::string& word) {
@@ -73,6 +74,44 @@ int main() {
     }
     cross.close();
 
-    std::cout << "Rezultatai irašyti i output.txt ir crossref.txt" << std::endl;
+ // URL paieška ir išvedimas į urls.txt
+    std::ifstream in2("input.txt");
+    if (!in2) {
+        std::cerr << "Nepavyko atidaryti input.txt" << std::endl;
+        return 1;
+    }
+    std::ofstream url_out("urls.txt");
+    if (!url_out) {
+        std::cerr << "Nepavyko atidaryti urls.txt" << std::endl;
+        return 1;
+    }
+
+    // regex,  https://, http://, www. ir domenus su .lt, .com ir pan.
+    std::regex url_regex(R"((https?://[^\s,]+)|(www\.[^\s,]+)|([a-zA-Z0-9\-_]+\.(lt|com|org|net|edu|gov|eu|ru|uk|de|fr|it|pl|us|info|io|co)(/[^\s,]*)?))");
+
+    std::string text_line;
+    std::set<std::string> found_urls;
+    while (std::getline(in2, text_line)) {
+        std::sregex_iterator it(text_line.begin(), text_line.end(), url_regex);
+        std::sregex_iterator end;
+        for (; it != end; ++it) {
+            std::string url = it->str();
+            // Pašaliname galinius skyrybos ženklus
+            while (!url.empty() && (url.back() == '.' || url.back() == ',' || url.back() == ')' || url.back() == ']')) {
+                url.pop_back();
+            }
+            found_urls.insert(url);
+        }
+    }
+    in2.close();
+
+    url_out << "Rasti URL adresai:\n";
+    for (const auto& url : found_urls) {
+        url_out << url << std::endl;
+    }
+    url_out.close();
+
+
+    std::cout << "Rezultatai irašyti i output.txt, crossref.txt ir urls.txt" << std::endl;
     return 0;
 }
